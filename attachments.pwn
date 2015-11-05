@@ -461,56 +461,16 @@ new const gAttachments[][e_ATTACHMENTS] =
 	}
 #endif
 
-CMD:att(playerid, args[])
+CMD:att(playerid)
 {
-	if (args[0] != ' ')
+ 	new
+     	buf[15 * MAX_PLAYER_ATTACHED_OBJECTS]
+	;
+	for (new x; x < MAX_PLAYER_ATTACHED_OBJECTS; x++)
 	{
-		new
-		    i = strval(args)
-		;
-		if (i < 0 || i >= MAX_PLAYER_ATTACHED_OBJECTS)
-		{
-		    return SendClientMessage(playerid, 0xFF0000FF, "ERROR: {FFFFFF}The attachment slot must be between 0 - "#MAX_PLAYER_ATTACHED_OBJECTS - 1".");
-		}
-
-		if (IsPlayerAttachedObjectSlotUsed(playerid, i))
-		{
-			pSlot[playerid] = i;
-			
-		    new
-		        buf[100]
-			;
-			format(buf, sizeof(buf), "Attachment already in use {00FF00}(slot %i):", i);
-		    return ShowPlayerDialog(playerid, DIALOG_ID_REPLACE, DIALOG_STYLE_LIST, buf, "Edit Object\nEdit Model\nDelete Object\nDuplicate Object", "Select", "Cancel");
-		}
-
-		pSlot[playerid] = i;
-
-		const
-		    size = sizeof(gAttachments)
-		;
-		new
-		    models[size],
-		    labels[size][25]
-		;
-		for (new x; x < size; x++)
-		{
-		    models[x] = gAttachments[x][attachModel];
-		    strcat(labels[x], gAttachments[x][attachName]);
-		}
-		ShowPlayerPreviewModelDialog(playerid, DIALOG_ID_SEARCH, DIALOG_STYLE_PREVMODEL, "Model selection:", models, labels, "Select", "Cancel");
+  		format(buf, sizeof(buf), "%sSlot %i%s", buf, x, (IsPlayerAttachedObjectSlotUsed(playerid, x)) ? ("{00FF00} (Used)\n") : ("\n"));
 	}
-	else
-	{
-	    new
-	        buf[15 * MAX_PLAYER_ATTACHED_OBJECTS]
-		;
-		for (new x; x < MAX_PLAYER_ATTACHED_OBJECTS; x++)
-		{
-		    format(buf, sizeof(buf), "%sSlot %i%s", buf, (IsPlayerAttachedObjectSlotUsed(playerid, x)) ? ("{00FF00} (Used)\n") : ("\n"));
-		}
-	    ShowPlayerDialog(playerid, DIALOG_ID_ATTACHMENTS, DIALOG_STYLE_LIST, "Attachment slot selection:", buf, "Select", "Cancel");
-	}
+  	ShowPlayerDialog(playerid, DIALOG_ID_ATTACHMENTS, DIALOG_STYLE_LIST, "Attachment slot selection:", buf, "Select", "Cancel");
 	
 	return 1;
 }
@@ -525,19 +485,30 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	        {
 	            pSlot[playerid] = listitem;
 
-				const
-				    size = sizeof(gAttachments)
-				;
-				new
-				    models[size],
-				    labels[size][25]
-				;
-				for (new x; x < size; x++)
+				if (IsPlayerAttachedObjectSlotUsed(playerid, listitem))
 				{
-				    models[x] = gAttachments[x][attachModel];
-				    strcat(labels[x], gAttachments[x][attachName]);
+				    new
+				        buf[100]
+					;
+					format(buf, sizeof(buf), "Attachment already in use {00FF00}(slot %i):", listitem);
+				    ShowPlayerDialog(playerid, DIALOG_ID_REPLACE, DIALOG_STYLE_LIST, buf, "Edit Object\nEdit Model\nDelete Object\nDuplicate Object", "Select", "Cancel");
 				}
-				ShowPlayerPreviewModelDialog(playerid, DIALOG_ID_SEARCH, DIALOG_STYLE_PREVMODEL, "Model selection:", models, labels, "Select", "Cancel");
+				else
+				{
+					const
+					    size = sizeof(gAttachments)
+					;
+					new
+					    models[size],
+					    labels[size][25]
+					;
+					for (new x; x < size; x++)
+					{
+					    models[x] = gAttachments[x][attachModel];
+					    strcat(labels[x], gAttachments[x][attachName]);
+					}
+					ShowPlayerPreviewModelDialog(playerid, DIALOG_ID_SEARCH, DIALOG_STYLE_PREVMODEL, "Model selection:", models, labels, "Select", "Cancel");
+	        	}
 	        }
 	    }
 		case DIALOG_ID_SEARCH:
