@@ -8,6 +8,9 @@
 
 #define SAVE_ATTACHMENTS //comment this if you want to disable saving attachments
 
+#undef 	MAX_PLAYER_ATTACHED_OBJECTS
+#define MAX_PLAYER_ATTACHED_OBJECTS 10 //maximum limit is 10, if you want less number of slots, set the value here
+
 #if defined SAVE_ATTACHMENTS
 	#include <yoursql>
 #endif
@@ -18,10 +21,14 @@
 #define DIALOG_ID_EDIT_MODEL (13)
 #define DIALOG_ID_DUPLICATE (14)
 #define DIALOG_ID_ATTACHMENTS (15)
+#define DIALOG_ID_COLOR (16)
+#define DIALOG_ID_COLOR_LIST (18)
+#define DIALOG_ID_CUSTOM_COLOR (17)
 
 new
 	pSlot[MAX_PLAYERS],
-	pSelected[MAX_PLAYERS]
+	pSelected[MAX_PLAYERS],
+	pColor[MAX_PLAYERS]
 ;
 
 enum e_ATTACHMENTS
@@ -414,9 +421,13 @@ new const gAttachments[][e_ATTACHMENTS] =
 		}
 	    return 1;
 	}
-	
-	public OnPlayerEditAttachedObject(playerid, response, index, modelid, boneid, Float:fOffsetX, Float:fOffsetY, Float:fOffsetZ, Float:fRotX, Float:fRotY, Float:fRotZ, Float:fScaleX, Float:fScaleY, Float:fScaleZ)
-	{
+#endif
+
+public OnPlayerEditAttachedObject(playerid, response, index, modelid, boneid, Float:fOffsetX, Float:fOffsetY, Float:fOffsetZ, Float:fRotX, Float:fRotY, Float:fRotZ, Float:fScaleX, Float:fScaleY, Float:fScaleZ)
+{
+	ShowPlayerDialog(playerid, DIALOG_ID_COLOR, DIALOG_STYLE_LIST, "Set attachment color:", "Materialcolor 1\nMaterialcolor 2", "Select", "Cancel");
+
+	#if defined SAVE_ATTACHMENTS
 		new
 	 		SQLRow:	rowid,
 			   		name[MAX_PLAYER_NAME],
@@ -456,15 +467,15 @@ new const gAttachments[][e_ATTACHMENTS] =
 		yoursql_set_field_float(SQL:0, buf, rowid, fScaleY);
 	 	format(buf, sizeof(buf), "attachment_slot%i/fScaleZ", index);
 		yoursql_set_field_float(SQL:0, buf, rowid, fScaleZ);
-
-		return 1;
-	}
-#endif
+	#endif
+	
+	return 1;
+}
 
 CMD:att(playerid)
 {
  	new
-     	buf[15 * MAX_PLAYER_ATTACHED_OBJECTS]
+     	buf[25 * MAX_PLAYER_ATTACHED_OBJECTS]
 	;
 	for (new x; x < MAX_PLAYER_ATTACHED_OBJECTS; x++)
 	{
@@ -685,7 +696,374 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				SendClientMessage(playerid, 0x00FF00FF, text);
 		    }
 		}
+		case DIALOG_ID_COLOR:
+		{
+		    if (response)
+		    {
+		        pColor[playerid] = listitem;
+		        
+		        new
+		            colors[500]
+				;
+				strcat(colors, "Custom Color (hex value)\n");
+				strcat(colors, "{FFFFFF}White\n");
+			    strcat(colors, "{000000}Black\n");
+			    strcat(colors, "{808080}Grey\n");
+			    strcat(colors, "{008080}Teal\n");
+			    strcat(colors, "{003366}Navy blue\n");
+			    strcat(colors, "{3366CC}Sky blue\n");
+			    strcat(colors, "{000099}Dark blue\n");
+			    strcat(colors, "{3399FF}Light blue\n");
+			    strcat(colors, "{6600CC}Dark purple\n");
+			    strcat(colors, "{6600FF}Purple\n");
+			    strcat(colors, "{6666FF}Light purple\n");
+			    strcat(colors, "{00FFFF}Cyan\n");
+			    strcat(colors, "{00FFCC}Aqua\n");
+			    strcat(colors, "{00CC99}Poision green\n");
+			    strcat(colors, "{006666}Lawn green\n");
+			    strcat(colors, "{00CC00}Green\n");
+			    strcat(colors, "{CC99FF}Pink\n");
+			    strcat(colors, "{FF99FF}Hot pink\n");
+			    strcat(colors, "{FFFF99}Light yellow\n");
+			    strcat(colors, "{FFFF66}Yellow\n");
+			    strcat(colors, "{FF9933}Orange\n");
+			    strcat(colors, "{660033}Magenta\n");
+			    strcat(colors, "{800000}Marone\n");
+			    strcat(colors, "{FF0000}Red\n");
+			    strcat(colors, "{CC0000}Dark red\n");
+			    strcat(colors, "{999966}Khaki\n");
+			    strcat(colors, "{993333}Coral\n");
+			    strcat(colors, "{CCFF99}Lime\n");
+			    strcat(colors, "{663300}Brown\n");
+			    strcat(colors, "{A9C4E4}SA-MP Blue");
+		        if (! listitem)
+		        {
+		        	ShowPlayerDialog(playerid, DIALOG_ID_COLOR_LIST, DIALOG_STYLE_LIST, "Color selection ({00FF00}Materialcolor 1{FFFFFF}):", colors, "Set", "Back");
+		        }
+		        else
+		        {
+		        	ShowPlayerDialog(playerid, DIALOG_ID_COLOR_LIST, DIALOG_STYLE_LIST, "Color selection ({00FF00}Materialcolor 2{FFFFFF}):", colors, "Set", "Back");
+		    	}
+		    }
+		}
+		case DIALOG_ID_COLOR_LIST:
+		{
+		    if (response)
+		    {
+		        new
+		            newcolor
+				;
+		        switch (listitem)
+		        {
+		            case 0:
+		            {
+		                ShowPlayerDialog(playerid, DIALOG_ID_CUSTOM_COLOR, DIALOG_STYLE_INPUT, "Custom color ({00FF00}Materialcolor 1{FFFFFF}):", "{FFFFFF}Insert an hex color value to set it as your object's material color:", "Set", "Back");
+		            }
+					case 1:
+					{
+						newcolor = 0xFFFFFFFF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"WHITE\".");
+		            }
+				    case 2:
+					{
+						newcolor = 0x000000FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"BLACK\".");
+		            }
+				    case 3:
+					{
+						newcolor = 0x808080FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"GREY\".");
+		            }
+				    case 4:
+					{
+						newcolor = 0x008080FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"TEAL\".");
+		            }
+				    case 5:
+					{
+						newcolor = 0x003366FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"NAVY BLUE\".");
+		            }
+				    case 6:
+					{
+						newcolor = 0x3366CCFF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"SKY BLUE\".");
+		            }
+				    case 7:
+					{
+						newcolor = 0x000099FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"DARK BLUE\".");
+		            }
+				    case 8:
+					{
+						newcolor = 0x3399FFFF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"LIGHT BLUE\".");
+		            }
+				    case 9:
+					{
+						newcolor = 0x6600CCFF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"DARK PURPLE\".");
+		            }
+				    case 10:
+					{
+						newcolor = 0x6600FFFF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"PURPLE\".");
+		            }
+				    case 11:
+					{
+						newcolor = 0x6666FFFF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"LIGHT PURPLE\".");
+		            }
+				    case 12:
+					{
+						newcolor = 0x00FFFFFF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"CYAN\".");
+		            }
+				    case 13:
+					{
+						newcolor = 0x00FFCCFF;
+					 	SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"AQUA\".");
+		            }
+				    case 14:
+					{
+						newcolor = 0x00CC99FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"POISION GREEN\".");
+		            }
+				    case 15:
+					{
+						newcolor = 0x006666FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"LAWN GREEN\".");
+		            }
+				    case 16:
+					{
+						newcolor = 0x00CC00FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"GREEN\".");
+		            }
+				    case 17:
+					{
+						newcolor = 0xCC99FFFF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"PINK\".");
+		            }
+				    case 18:
+					{
+						newcolor = 0xFF99FFFF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"HOT PINK\".");
+		            }
+				    case 19:
+					{
+						newcolor = 0xFFFF99FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"LIGHT YELLOW\".");
+		            }
+				    case 20:
+					{
+						newcolor = 0xFFFF66FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"YELLOW\".");
+		            }
+				    case 21:
+					{
+						newcolor = 0xFF9933FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"ORANGE\".");
+		            }
+				    case 22:
+					{
+						newcolor = 0x660033FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"MAGENTA\".");
+		            }
+				    case 23:
+					{
+						newcolor = 0x800000FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"MARONE\".");
+		            }
+				    case 24:
+					{
+						newcolor = 0xFF0000FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"RED\".");
+		            }
+				    case 25:
+					{
+						newcolor = 0xCC0000FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"DARK RED\".");
+		            }
+				    case 26:
+					{
+						newcolor = 0x999966FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"KHAKI\".");
+		            }
+				    case 27:
+					{
+						newcolor = 0x993333FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"CORAL\".");
+		            }
+				    case 28:
+					{
+						newcolor = 0xCCFF99FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"LIME\".");
+		            }
+				    case 29:
+					{
+						newcolor = 0x663300FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"BROWN\".");
+		            }
+				    case 30:
+					{
+						newcolor = 0xA9C4E4FF;
+						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"SAMP BLUE\".");
+		            }
+				}
+				
+				new
+						    modelid,
+							boneid,
+					Float:	fOffsetX,
+					Float:	fOffsetY,
+					Float:	fOffsetZ,
+					Float:	fRotX,
+					Float:	fRotY,
+					Float:	fRotZ,
+					Float:	fScaleX,
+					Float:	fScaleY,
+					Float:	fScaleZ,
+							color1,
+							color2
+				;
+		        GetPlayerAttachedObject(playerid, pSlot[playerid], modelid, boneid, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, color1, color2);
+		        SetPlayerAttachedObject(playerid, pSlot[playerid], modelid, boneid, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, (! pColor[playerid]) ? newcolor : color1, (pColor[playerid]) ? newcolor : color2);
+			}
+
+			ShowPlayerDialog(playerid, DIALOG_ID_COLOR, DIALOG_STYLE_LIST, "Set attachment color:", "Materialcolor 1\nMaterialcolor 2", "Select", "Cancel");
+		}
+		case DIALOG_ID_CUSTOM_COLOR:
+		{
+		    if (response)
+		    {
+		        new
+					red[3],
+					green[3],
+					blue[3],
+					alpha[3]
+				;
+
+	           	if (inputtext[0] == '0' && inputtext[1] == 'x') //using 0xFFFFFF format
+	            {
+	            	if (strlen(inputtext) != 8 && strlen(inputtext) != 10)
+					{
+					    SendClientMessage(playerid, 0xFF0000FF, "ERROR: {FFFFFF}You have entered an invalid hex color value.");
+						return ShowPlayerDialog(playerid, DIALOG_ID_CUSTOM_COLOR, DIALOG_STYLE_INPUT, "Custom color ({00FF00}Materialcolor 1{FFFFFF}):", "{FFFFFF}Insert an hex color value to set it as your object's material color:", "Set", "Back");
+	                }
+					else
+	                {
+		             	format(red, sizeof(red), "%c%c", inputtext[2], inputtext[3]);
+		                format(green, sizeof(green), "%c%c", inputtext[4], inputtext[5]);
+		                format(blue, sizeof(blue), "%c%c", inputtext[6], inputtext[7]);
+		               	if (inputtext[8] != '\0')
+	                 	{
+					 		format(alpha, sizeof(alpha), "%c%c", inputtext[8], inputtext[9]);
+						}
+						else
+						{
+						    alpha = "FF";
+						}
+	                }
+	     		}
+				else if (inputtext[0] == '#') //using #FFFFFF format
+	            {
+	            	if (strlen(inputtext) != 7 && strlen(inputtext) != 9)
+					{
+					    SendClientMessage(playerid, 0xFF0000FF, "ERROR: {FFFFFF}You have entered an invalid hex color value.");
+						return ShowPlayerDialog(playerid, DIALOG_ID_CUSTOM_COLOR, DIALOG_STYLE_INPUT, "Custom color ({00FF00}Materialcolor 1{FFFFFF}):", "{FFFFFF}Insert an hex color value to set it as your object's material color:", "Set", "Back");
+	                }
+	                else
+	                {
+	     				format(red, sizeof(red), "%c%c", inputtext[1], inputtext[2]);
+		                format(green, sizeof(green), "%c%c", inputtext[3], inputtext[4]);
+		                format(blue, sizeof(blue), "%c%c", inputtext[5], inputtext[6]);
+		                if (inputtext[7] != '\0')
+	                 	{
+						 	format(alpha, sizeof(alpha), "%c%c", inputtext[7], inputtext[8]);
+						}
+						else
+						{
+						    alpha = "FF";
+						}
+	                }
+	  			}
+			  	else //using FFFFFF format
+	            {
+	            	if (strlen(inputtext) != 6 && strlen(inputtext) != 8)
+					{
+					    SendClientMessage(playerid, 0xFF0000FF, "ERROR: {FFFFFF}You have entered an invalid hex color value.");
+						return ShowPlayerDialog(playerid, DIALOG_ID_CUSTOM_COLOR, DIALOG_STYLE_INPUT, "Custom color ({00FF00}Materialcolor 1{FFFFFF}):", "{FFFFFF}Insert an hex color value to set it as your object's material color:", "Set", "Back");
+	                }
+	                else
+	                {
+		            	format(red, sizeof(red), "%c%c", inputtext[0], inputtext[1]);
+		                format(green, sizeof(green), "%c%c", inputtext[2], inputtext[3]);
+		                format(blue, sizeof(blue), "%c%c", inputtext[4], inputtext[5]);
+	                 	if (inputtext[6] != '\0')
+		                {
+							format(alpha, sizeof(alpha), "%c%c", inputtext[6], inputtext[7]);
+						}
+						else
+						{
+						    alpha = "FF";
+						}
+	                }
+				}
+
+				new
+				            newcolor = RGB(HexToInt(red), HexToInt(green), HexToInt(blue), HexToInt(alpha)),
+				    		modelid,
+							boneid,
+					Float:	fOffsetX,
+					Float:	fOffsetY,
+					Float:	fOffsetZ,
+					Float:	fRotX,
+					Float:	fRotY,
+					Float:	fRotZ,
+					Float:	fScaleX,
+					Float:	fScaleY,
+					Float:	fScaleZ,
+							color1,
+							color2
+				;
+	   			GetPlayerAttachedObject(playerid, pSlot[playerid], modelid, boneid, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, color1, color2);
+			    SetPlayerAttachedObject(playerid, pSlot[playerid], modelid, boneid, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, (! pColor[playerid]) ? newcolor : color1, (pColor[playerid]) ? newcolor : color2);
+			}
+
+			ShowPlayerDialog(playerid, DIALOG_ID_COLOR, DIALOG_STYLE_LIST, "Set attachment color:", "Materialcolor 1\nMaterialcolor 2", "Select", "Cancel");
+		}
 	}
 	
 	return 1;
+}
+
+RGB(red, green, blue, alpha)
+{
+	return (red * 16777216) + (green * 65536) + (blue * 256) + alpha;
+}
+
+HexToInt(string[])
+{
+  	if (! string[0])
+	{
+		return 0;
+  	}
+
+  	new
+	  	cur = 1,
+	  	res = 0
+	;
+  	for (new i = strlen(string); i > 0; i--)
+  	{
+    	if (string[i - 1] < 58)
+		{
+			res = res + cur * (string[i - 1] - 48);
+		}
+		else
+		{
+			res = res + cur * (string[i - 1] - 65 + 10);
+    	}
+		cur = cur * 16;
+	}
+	return res;
 }
