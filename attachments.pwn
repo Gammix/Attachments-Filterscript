@@ -2,7 +2,7 @@
 // Special thanks to: Zeex & Yashas - IZCMD include
 
 #include <a_samp>
-#include <SAMP_Fixer/fix_attachments>
+#include <attachments>
 #include <dialogs>
 #include <izcmd>
 
@@ -326,7 +326,7 @@ new const gAttachments[][e_ATTACHMENTS] =
 	    {
 	        format(buf, sizeof(buf), "attachment_slot%i", i);
 			yoursql_verify_table(SQL:0, buf);
-			
+
 	        format(buf, sizeof(buf), "attachment_slot%i/user", i);
 			yoursql_verify_column(SQL:0, buf, SQL_STRING);
 	        format(buf, sizeof(buf), "attachment_slot%i/modelid", i);
@@ -354,13 +354,13 @@ new const gAttachments[][e_ATTACHMENTS] =
 		}
 	    return 1;
 	}
-	
+
 	public OnFilterScriptExit()
 	{
 	    yoursql_close(SQL:0);
 	    return 1;
 	}
-	
+
 	public OnPlayerSpawn(playerid)
 	{
 	    new
@@ -376,7 +376,7 @@ new const gAttachments[][e_ATTACHMENTS] =
 			{
 			    continue;
 			}
-			
+
 			new
 					    modelid,
 						boneid,
@@ -416,7 +416,7 @@ new const gAttachments[][e_ATTACHMENTS] =
 			fScaleY = yoursql_get_field_float(SQL:0, buf, rowid);
 	        format(buf, sizeof(buf), "attachment_slot%i/fScaleZ", i);
 			fScaleZ = yoursql_get_field_float(SQL:0, buf, rowid);
-			
+
 			SetPlayerAttachedObject(playerid, i, modelid, boneid, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ);
 		}
 	    return 1;
@@ -468,7 +468,7 @@ public OnPlayerEditAttachedObject(playerid, response, index, modelid, boneid, Fl
 	 	format(buf, sizeof(buf), "attachment_slot%i/fScaleZ", index);
 		yoursql_set_field_float(SQL:0, buf, rowid, fScaleZ);
 	#endif
-	
+
 	return 1;
 }
 
@@ -482,7 +482,7 @@ CMD:att(playerid)
   		format(buf, sizeof(buf), "%sSlot %i%s", buf, x, (IsPlayerAttachedObjectSlotUsed(playerid, x)) ? ("{00FF00} (Used)\n") : ("\n"));
 	}
   	ShowPlayerDialog(playerid, DIALOG_ID_ATTACHMENTS, DIALOG_STYLE_LIST, "Attachment slot selection:", buf, "Select", "Cancel");
-	
+
 	return 1;
 }
 
@@ -655,7 +655,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				    ShowPlayerDialog(playerid, DIALOG_ID_DUPLICATE, DIALOG_STYLE_INPUT, "Duplicate attachment:", "{FFFFFF}Insert an attachment slot you want to duplicate this object to.\n\nNOTE: The slot must be empty.", "Duplicate", "Cancel");
 				    return SendClientMessage(playerid, 0xFF0000FF, "ERROR: {FFFFFF}You cannot leave the box blank.");
 				}
-				
+
 		        new
 		            duplicate = strval(inputtext)
 				;
@@ -664,13 +664,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				    ShowPlayerDialog(playerid, DIALOG_ID_DUPLICATE, DIALOG_STYLE_INPUT, "Duplicate attachment:", "{FFFFFF}Insert an attachment slot you want to duplicate this object to.\n\nNOTE: The slot must be empty.", "Duplicate", "Cancel");
 				    return SendClientMessage(playerid, 0xFF0000FF, "ERROR: {FFFFFF}The attachment slot must be between 0 - "#MAX_PLAYER_ATTACHED_OBJECTS - 1".");
 				}
-				
+
 				if (IsPlayerAttachedObjectSlotUsed(playerid, duplicate))
 				{
 				    ShowPlayerDialog(playerid, DIALOG_ID_DUPLICATE, DIALOG_STYLE_INPUT, "Duplicate attachment:", "{FFFFFF}Insert an attachment slot you want to duplicate this object to.\n\nNOTE: The slot must be empty.", "Duplicate", "Cancel");
 				    return SendClientMessage(playerid, 0xFF0000FF, "ERROR: {FFFFFF}The slot specigfied is already used, please insert an empty one.");
 				}
-				
+
 		        new
 						    modelid,
 							boneid,
@@ -701,7 +701,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		    if (response)
 		    {
 		        pColor[playerid] = listitem;
-		        
+
 		        new
 		            colors[500]
 				;
@@ -910,7 +910,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						SendClientMessage(playerid, 0x00FF00FF, "ATTACHMENT: {FFFFFF}You have changeed the object material colot to \"SAMP BLUE\".");
 		            }
 				}
-				
+
 				new
 						    modelid,
 							boneid,
@@ -1033,7 +1033,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			ShowPlayerDialog(playerid, DIALOG_ID_COLOR, DIALOG_STYLE_LIST, "Set attachment color:", "Materialcolor 1\nMaterialcolor 2", "Select", "Cancel");
 		}
 	}
-	
+
 	return 1;
 }
 
