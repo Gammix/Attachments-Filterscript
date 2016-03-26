@@ -3,8 +3,18 @@
 
 #include <a_samp>
 #include <attachments>
-#include <dialogs>
 #include <izcmd>
+#include <dialogs>
+
+ShowPlayerPreviewModelDialog(playerid, dialogid, caption[], models[], labels[][], button1[], button2[], size = sizeof (models))
+{
+	new info[1024];
+	for (new i; i < size; i++)
+	{
+	    format(info, sizeof (info), "%s%i\n%s\n", info, models[i], labels[i]);
+	}
+	return ShowPlayerDialog(playerid, dialogid, DIALOG_STYLE_PREVMODEL, caption, info, button1, button2);
+}
 
 #define SAVE_ATTACHMENTS //comment this if you want to disable saving attachments
 
@@ -14,6 +24,8 @@
 #if defined SAVE_ATTACHMENTS
 	#include <yoursql>
 #endif
+
+#pragma dynamic (11000)
 
 #define DIALOG_ID_SEARCH (10)
 #define DIALOG_ID_BONE (11)
@@ -518,7 +530,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					    models[x] = gAttachments[x][attachModel];
 					    strcat(labels[x], gAttachments[x][attachName]);
 					}
-					ShowPlayerPreviewModelDialog(playerid, DIALOG_ID_SEARCH, DIALOG_STYLE_PREVMODEL, "Model selection:", models, labels, "Select", "Cancel");
+					ShowPlayerPreviewModelDialog(playerid, DIALOG_ID_SEARCH, "Model selection:", models, labels, "Select", "Cancel");
 	        	}
 	        }
 	    }
@@ -554,7 +566,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				    __models[i] = gAttachments[i][attachModel];
 				    strcat(__labels[i], gAttachments[i][attachName]);
 				}
-				return ShowPlayerPreviewModelDialog(playerid, DIALOG_ID_SEARCH, DIALOG_STYLE_PREVMODEL, "Model selection:", __models, __labels, "Select", "Cancel");
+				return ShowPlayerPreviewModelDialog(playerid, DIALOG_ID_SEARCH, "Model selection:", __models, __labels, "Select", "Cancel");
 			}
 		}
 		case DIALOG_ID_REPLACE:
@@ -582,8 +594,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						{
 						    _models[i] = gAttachments[i][attachModel];
 						    strcat(_labels[i], gAttachments[i][attachName]);
-						}
-						return ShowPlayerPreviewModelDialog(playerid, DIALOG_ID_EDIT_MODEL, DIALOG_STYLE_PREVMODEL, "Edit attachment model:", _models, _labels, "Change", "Cancel");
+      					}
+						return ShowPlayerPreviewModelDialog(playerid, DIALOG_ID_EDIT_MODEL, "Edit attachment model:", _models, _labels, "Change", "Cancel");
 			        }
 		            case 2:
 		            {
